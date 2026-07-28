@@ -1,7 +1,5 @@
 name: "Submodule Pinning Check"
-description: >-
-  Verify that one or more git submodules are pinned to the exact commit that a
-  branch in the submodule's upstream repository currently points to.
+description: "Check that git submodules are pinned to the exact commit a branch in their upstream repository points to."
 author: "digital-blueprint"
 
 branding:
