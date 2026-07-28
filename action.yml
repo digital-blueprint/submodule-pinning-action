@@ -1,0 +1,59 @@
+name: "Submodule Pinning Check"
+description: >-
+  Verify that one or more git submodules are pinned to the exact commit that a
+  branch in the submodule's upstream repository currently points to.
+author: "digital-blueprint"
+
+branding:
+  icon: "git-commit"
+  color: "purple"
+
+inputs:
+  submodules:
+    description: >-
+      Multi-line or JSON list of submodules to check. Each entry configures a
+      submodule name/path, the remote repository and the remote branch to
+      compare against.
+
+      YAML/multi-line format (one submodule per line):
+        vendor/signature = https://github.com/org/repo@production
+        vendor/toolkit   = https://github.com/org/toolkit@main
+
+      When the repository URL is omitted the URL is read from .gitmodules:
+        vendor/signature = @production
+
+      JSON format:
+        [{"path":"vendor/signature","repo":"https://github.com/org/repo","branch":"production"}]
+    required: true
+  working-directory:
+    description: "Directory of the git repository to inspect."
+    required: false
+    default: "."
+  fail-fast:
+    description: >-
+      When "true" the action exits on the first mismatch. When "false"
+      (default) all submodules are checked and every mismatch is reported.
+    required: false
+    default: "false"
+
+outputs:
+  mismatched:
+    description: >-
+      JSON array of submodule paths whose pinned commit does not match the
+      upstream branch. Empty array when everything matches.
+    value: ${{ steps.check.outputs.mismatched }}
+  matched:
+    description: "JSON array of submodule paths that matched the upstream branch."
+    value: ${{ steps.check.outputs.matched }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check submodule pinning
+      id: check
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        INPUT_SUBMODULES: ${{ inputs.submodules }}
+        INPUT_FAIL_FAST: ${{ inputs.fail-fast }}
+      run: bash "$GITHUB_ACTION_PATH/check-submodule-pins.sh"
